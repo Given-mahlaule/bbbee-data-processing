@@ -5,6 +5,7 @@ from openpyxl.styles import PatternFill
 from openpyxl.worksheet.table import Table, TableStyleInfo
 from zipfile import ZipFile
 import io
+from streamlit_option_menu import option_menu
 
 # Function to normalize percentage values
 def normalize_percentage(value):
@@ -154,11 +155,27 @@ def format_sap_input(file):
 
     return zip_buffer
 
-st.title('SAP Data Processing App')
+# Set the custom page title
+st.set_page_config(page_title="B-BBEE Data Processing")
+
+st.title('B-BBEE Data Processing')
 
 # Sidebar menu
-st.sidebar.title("BBBEE Excel Data Processing")
-menu = st.sidebar.radio("Select an option", ["Validate SAP Data", "Format SAP Input File"])
+with st.sidebar:
+    menu = option_menu(
+        menu_title="BBBEE Excel Data Processing", 
+        options=["Validate SAP Data", "Format SAP Input File"], 
+        icons=["check-circle", "file-earmark-spreadsheet"], 
+        menu_icon="house", 
+        default_index=0,
+        styles={
+            "container": {"padding": "5!important", "background-color": "#262730"},
+            "icon": {"color": "white", "font-size": "18px"}, 
+            "nav-link": {"font-size": "14px", "text-align": "left", "margin": "0px", "--hover-color": "#565656", "color": "white"},
+            "nav-link-selected": {"background-color": "#4CAF50"},
+            "menu-title": {"font-size": "16px", "color": "white", "text-align": "left", "white-space": "nowrap"}
+        }
+    )
 
 if menu == "Validate SAP Data":
     st.header('Validate SAP Data')
