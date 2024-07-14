@@ -203,19 +203,18 @@ if menu == "Validate SAP Data":
             merged_df = pd.merge(subset_df1, subset_df2, on="Supplier Number", suffixes=('_incorrect', '_correct'))
 
             # Load the original Excel file to apply the highlighting and corrections
-            buffer_corrected = io.BytesIO()
-            with pd.ExcelWriter(buffer_corrected, engine='openpyxl') as writer:
-                df1.to_excel(writer, index=False)
-                wb = writer.book
-                ws = wb.active
+            wb = load_workbook(uploaded_file1)
+            ws = wb.active
 
-                replace_and_highlight_cells(ws, merged_df, subset_df1, df1)
-                
-                wb.save(buffer_corrected)
-            buffer_corrected.seek(0)
+            replace_and_highlight_cells(ws, merged_df, subset_df1, df1)
+            
+            # Save the updated Excel file to a BytesIO object
+            corrected_file = io.BytesIO()
+            wb.save(corrected_file)
+            corrected_file.seek(0)
 
         st.success('The values have been successfully corrected.')
-        st.download_button('Download Corrected File', data=buffer_corrected, file_name='Corrected_Spend_Report.xlsx')
+        st.download_button('Download Corrected File', data=corrected_file, file_name='Corrected_Spend_Report.xlsx')
 
 elif menu == "Format SAP Input File":
     st.header('Format SAP Input File')
