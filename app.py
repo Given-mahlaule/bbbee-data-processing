@@ -21,12 +21,10 @@ def normalize_percentage(value):
 def replace_and_highlight_cells(ws, merged_df, subset_df1, df1):
     for index, row in merged_df.iterrows():
         supplier_number = row["Supplier Number"]
-        print(f"Processing Supplier Number: {supplier_number} at merged DataFrame index {index}")
 
         # Find the corresponding row in the original df1 DataFrame
         original_index = subset_df1.index[subset_df1["Supplier Number"] == supplier_number].tolist()
         if not original_index:
-            print(f"Supplier Number {supplier_number} not found in original DataFrame")
             continue
         
         original_index = original_index[0]
@@ -44,16 +42,13 @@ def replace_and_highlight_cells(ws, merged_df, subset_df1, df1):
                 if pd.notna(incorrect_value):
                     if isinstance(incorrect_value, float) and isinstance(correct_value, float):
                         if not (abs(incorrect_value - correct_value) < 0.1):
-                            print(f"Updating cell at row {cell_row}, column {cell_col} with value {correct_value}")
                             ws.cell(row=cell_row, column=cell_col, value=correct_value)
                             ws.cell(row=cell_row, column=cell_col).fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
                     else:
                         if incorrect_value != correct_value:
-                            print(f"Updating cell at row {cell_row}, column {cell_col} with value {correct_value}")
                             ws.cell(row=cell_row, column=cell_col, value=correct_value)
                             ws.cell(row=cell_row, column=cell_col).fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
                 else:
-                    print(f"Updating cell at row {cell_row}, column {cell_col} with value {correct_value}")
                     ws.cell(row=cell_row, column=cell_col, value=correct_value)
                     ws.cell(row=cell_row, column=cell_col).fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
 
