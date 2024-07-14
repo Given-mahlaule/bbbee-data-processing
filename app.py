@@ -208,17 +208,19 @@ if menu == "Validate SAP Data":
             merged_df = pd.merge(subset_df1, subset_df2, on="Supplier Number", suffixes=('_incorrect', '_correct'))
 
             # Load the original Excel file to apply the highlighting and corrections
-            wb = load_workbook(uploaded_file1)
-            ws = wb.active
+            buffer_corrected = io.BytesIO()
+            with pd.ExcelWriter(buffer_corrected, engine='openpyxl') as writer:
+                df1.to_excel(writer, index=False)
+                wb = writer.book
+                ws = wb.active
 
-            replace_and_highlight_cells(ws, merged_df, subset_df1, df1)
-
-            # Save the updated Excel file
-            corrected_file_path = 'Corrected_Spend_Report.xlsx'
-            wb.save(corrected_file_path)
+                replace_and_highlight_cells(ws, merged_df, subset_df1, df1)
+                
+                wb.save(buffer_corrected)
+            buffer_corrected.seek(0)
 
         st.success('The values have been successfully corrected.')
-        st.download_button('Download Corrected File', data=open(corrected_file_path, 'rb'), file_name='Corrected_Spend_Report.xlsx')
+        st.download_button('Download Corrected File', data=buffer_corrected, file_name='Corrected_Spend_Report.xlsx')
 
 elif menu == "Format SAP Input File":
     st.header('Format SAP Input File')
@@ -229,4 +231,4 @@ elif menu == "Format SAP Input File":
             zip_buffer = format_sap_input(uploaded_file)
         
         st.success('The SAP input file has been successfully formatted.')
-        st.download_button('Download Formatted Files as Zip', data=zip_buffer.getvalue(), file_name='Formatted_Input_to_SAP_June_2024.zip', mime='application/zip')
+        st.download_button('Download Formatted Files as Zip', data=zip_buffer, file_name='Formatted_Input_to_SAP_June_2024.zip', mime='application/zip')
