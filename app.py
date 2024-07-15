@@ -189,7 +189,6 @@ if menu == "Validate SAP Data":
             # Subset the dataframes to only the relevant columns
             subset_df1 = df1[cols_df1].copy()
             subset_df2 = df2[cols_df2].copy()
-            
 
             # Rename columns in the second dataframe to match the first dataframe for easier merging
             subset_df2.columns = ["Supplier Number", "Score Card", "Expiry Date", "B-BBEE Status", "Black Designated %", "Black Owned %", "Black Women Owned %"]
