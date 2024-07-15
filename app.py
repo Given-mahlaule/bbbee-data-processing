@@ -85,7 +85,7 @@ def format_sap_input(file):
 
     df['Year'] = df['Year'].astype(str).str[:4]
     df['Supplier'] = df['Supplier'].astype(str).str[:10]
-    df['Supplier'] = df['Supplier'].apply(lambda x: '00' + x if len(x) == 8 else x)
+    df['Supplier'] = df['Supplier'].apply(lambda x: '00' + x if x.isdigit() and len(x) == 8 else x)
     df['Supplier Description'] = df['Supplier Description'].astype(str).str[:35]
     df['Division'] = df['Division'].astype(str).str[:8]
     df['Spend Exclusion Percentage'] = df['Spend Exclusion Percentage'].astype(str).str[:3]
