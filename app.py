@@ -3,7 +3,7 @@ import pandas as pd
 from openpyxl import load_workbook
 from openpyxl.styles import PatternFill
 from openpyxl.worksheet.table import Table, TableStyleInfo
-from zipfile import ZipFile
+from openpyxl.styles import numbers
 import io
 from streamlit_option_menu import option_menu
 
@@ -52,7 +52,7 @@ def replace_and_highlight_cells(ws, merged_df, subset_df1, df1):
                     ws.cell(row=cell_row, column=cell_col, value=correct_value)
                     ws.cell(row=cell_row, column=cell_col).fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
 
-# Function to format SAP input file and split it into chunks of 10 rows
+# Function to format SAP input file
 def format_sap_input(file):
     df = pd.read_excel(file)
 
@@ -84,8 +84,8 @@ def format_sap_input(file):
     df = df[required_columns]
 
     df['Year'] = df['Year'].astype(str).str[:4]
-    df['Supplier'] = df['Supplier'].astype(str).str[:10]
-    df['Supplier'] = df['Supplier'].apply(lambda x: '00' + x if x.isdigit() and len(x) == 8 else x)
+    df['Supplier'] = df['Supplier'].astype(str)
+    df['Supplier'] = df['Supplier'].apply(lambda x: '0000000' + x if len(x) == 3 and x.isdigit() else ('00' + x if len(x) == 8 and x.isdigit() else x))
     df['Supplier Description'] = df['Supplier Description'].astype(str).str[:35]
     df['Division'] = df['Division'].astype(str).str[:8]
     df['Spend Exclusion Percentage'] = df['Spend Exclusion Percentage'].astype(str).str[:3]
@@ -116,6 +116,11 @@ def format_sap_input(file):
         df.to_excel(writer, index=False)
         wb = writer.book
         ws = wb.active
+
+        # Format the Supplier column as text
+        for cell in ws['B']:
+            cell.number_format = numbers.FORMAT_TEXT
+
         tab = Table(displayName="FormattedData", ref=ws.dimensions)
         style = TableStyleInfo(name="TableStyleMedium9", showFirstColumn=False,
                                showLastColumn=False, showRowStripes=True, showColumnStripes=True)
@@ -123,32 +128,7 @@ def format_sap_input(file):
         ws.add_table(tab)
     buffer_full.seek(0)
 
-    # Create smaller Excel files with chunks of 10 rows each
-    chunk_size = 10
-    chunk_buffers = []
-
-    for i in range(0, len(df), chunk_size):
-        chunk_df = df.iloc[i:i + chunk_size]
-        buffer_chunk = io.BytesIO()
-        with pd.ExcelWriter(buffer_chunk, engine='openpyxl') as writer:
-            chunk_df.to_excel(writer, index=False)
-            wb_chunk = writer.book
-            ws_chunk = wb_chunk.active
-            tab_chunk = Table(displayName=f"Table_{i // chunk_size + 1}", ref=ws_chunk.dimensions)
-            tab_chunk.tableStyleInfo = style
-            ws_chunk.add_table(tab_chunk)
-        buffer_chunk.seek(0)
-        chunk_buffers.append(buffer_chunk)
-
-    # Create a zip file in-memory
-    zip_buffer = io.BytesIO()
-    with ZipFile(zip_buffer, 'w') as zip_file:
-        zip_file.writestr('Formatted_Input_to_SAP_June_2024.xlsx', buffer_full.getvalue())
-        for idx, buffer_chunk in enumerate(chunk_buffers):
-            zip_file.writestr(f'Chunk_{idx + 1}.xlsx', buffer_chunk.getvalue())
-    zip_buffer.seek(0)
-
-    return zip_buffer
+    return buffer_full
 
 # Set the custom page title
 st.set_page_config(page_title="B-BBEE Data Processing")
@@ -222,7 +202,7 @@ elif menu == "Format SAP Input File":
 
     if uploaded_file:
         with st.spinner('Processing...'):
-            zip_buffer = format_sap_input(uploaded_file)
+            buffer_full = format_sap_input(uploaded_file)
         
         st.success('The SAP input file has been successfully formatted.')
-        st.download_button('Download Formatted Files as Zip', data=zip_buffer, file_name='Formatted_Input_to_SAP_June_2024.zip', mime='application/zip')
+        st.download_button('Download Formatted File', data=buffer_full, file_name='Formatted_Input_to_SAP_June_2024.xlsx')
