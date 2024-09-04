@@ -83,6 +83,14 @@ def format_sap_input(file):
 
     df = df[required_columns]
 
+    # Clean and convert percentage columns
+    for col in ['Black Ownership Percentage', 'Black Woman Ownership Percentage', 'Black Designated Group Percentage']:
+        # Remove any non-numeric characters, like '%', and convert to numeric, coercing errors
+        df[col] = pd.to_numeric(df[col].astype(str).str.replace('[^0-9.]', '', regex=True), errors='coerce')
+
+        # Multiply by 100 if the value is not null
+        df[col] = df[col].apply(lambda x: x * 100 if pd.notna(x) else x).astype(str).str[:6]
+
     df['Year'] = df['Year'].astype(str).str[:4]
     df['Supplier'] = df['Supplier'].astype(str)
     df['Supplier'] = df['Supplier'].apply(lambda x: '0000000' + x if len(x) == 3 and x.isdigit() else ('00' + x if len(x) == 8 and x.isdigit() else x))
@@ -96,9 +104,6 @@ def format_sap_input(file):
     df['QSE'] = df['QSE'].astype(str).str[:1]
     df['EME'] = df['EME'].astype(str).str[:1]
     df['Level'] = df['Level'].replace('Non-compliant', '').astype(str).str[:1]
-    df['Black Ownership Percentage'] = df['Black Ownership Percentage'].astype(str).replace('%', '').astype(float).apply(lambda x: x * 100 if pd.notna(x) else x).astype(str).str[:6]
-    df['Black Woman Ownership Percentage'] = df['Black Woman Ownership Percentage'].astype(str).replace('%', '').astype(float).apply(lambda x: x * 100 if pd.notna(x) else x).astype(str).str[:6]
-    df['Black Designated Group Percentage'] = df['Black Designated Group Percentage'].astype(str).replace('%', '').astype(float).apply(lambda x: x * 100 if pd.notna(x) else x).astype(str).str[:6]
     df['Empowering Supplier'] = df['Empowering Supplier'].astype(str).str[:1]
     df['Black Designated Group'] = df['Black Designated Group'].astype(str).str[:1]
     df['Expiry Date'] = df['Expiry Date'].astype(str).str[:8]
