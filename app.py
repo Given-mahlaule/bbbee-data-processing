@@ -88,8 +88,8 @@ def format_sap_input(file):
         # Remove any non-numeric characters, like '%', and convert to numeric, coercing errors
         df[col] = pd.to_numeric(df[col].astype(str).str.replace('[^0-9.]', '', regex=True), errors='coerce')
 
-        # Divide by 100 if the value is greater than 100 to correct the scale
-        df[col] = df[col].apply(lambda x: x / 100 if pd.notna(x) and x > 100 else x).astype(str).str[:6]
+        # Multiply by 100 if the value is not null
+        df[col] = df[col].apply(lambda x: x * 100 if pd.notna(x) else x).astype(str).str[:6]
 
     df['Year'] = df['Year'].astype(str).str[:4]
     df['Supplier'] = df['Supplier'].astype(str)
