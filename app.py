@@ -96,9 +96,9 @@ def format_sap_input(file):
     df['QSE'] = df['QSE'].astype(str).str[:1]
     df['EME'] = df['EME'].astype(str).str[:1]
     df['Level'] = df['Level'].replace('Non-compliant', '').astype(str).str[:1]
-    df['Black Ownership Percentage'] = (df['Black Ownership Percentage'].astype(float) * 100).astype(str).str[:6]
-    df['Black Woman Ownership Percentage'] = (df['Black Woman Ownership Percentage'].astype(float) * 100).astype(str).str[:6]
-    df['Black Designated Group Percentage'] = (df['Black Designated Group Percentage'].astype(float) * 100).astype(str).str[:6]
+    df['Black Ownership Percentage'] = df['Black Ownership Percentage'].astype(str).replace('%', '').astype(float).apply(lambda x: x * 100 if pd.notna(x) else x).astype(str).str[:6]
+    df['Black Woman Ownership Percentage'] = df['Black Woman Ownership Percentage'].astype(str).replace('%', '').astype(float).apply(lambda x: x * 100 if pd.notna(x) else x).astype(str).str[:6]
+    df['Black Designated Group Percentage'] = df['Black Designated Group Percentage'].astype(str).replace('%', '').astype(float).apply(lambda x: x * 100 if pd.notna(x) else x).astype(str).str[:6]
     df['Empowering Supplier'] = df['Empowering Supplier'].astype(str).str[:1]
     df['Black Designated Group'] = df['Black Designated Group'].astype(str).str[:1]
     df['Expiry Date'] = df['Expiry Date'].astype(str).str[:8]
@@ -107,8 +107,6 @@ def format_sap_input(file):
 
     df.replace(['n', 'nan', 'NaN'], '', inplace=True)
     df.fillna('', inplace=True)
-
-    df['Scorecard'] = df['Scorecard'].replace('Gen', 'GEN')
 
     # Create an in-memory buffer to save the full formatted file
     buffer_full = io.BytesIO()
